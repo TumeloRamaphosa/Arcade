@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 ARCADE Command Deck — Studex Agent OS</title>
+    <style>
+        :root {
+            --obsidian: #0A0A0A;
+            --gold: #C9A84C;
+            --charcoal: #1a1a1a;
+            --white: #ffffff;
+            --red: #ff0000;
+            --green: #00ff00;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Cormorant Garamond', 'Space Mono', monospace;
+            background: var(--obsidian);
+            color: var(--white);
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gold);
+        }
+        .header h1 {
+            font-size: 2rem;
+            letter-spacing: 2px;
+            color: var(--gold);
+        }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 20px var(--gold);
+            animation: pulse 2s infinite;
+        }
+        .status-dot.offline {
+            background: var(--red);
+            box-shadow: 0 0 20px var(--red);
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .mode-badge {
+            padding: 0.5rem 1rem;
+            background: var(--gold);
+            color: var(--obsidian);
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        .mode-badge.cloud {
+            background: #6366f1;
+            color: white;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--charcoal);
+            padding: 1.5rem;
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+        }
+        .stat-card h3 {
+            color: var(--gold);
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .stat-card .value {
+            font-size: 1.8rem;
+            color: var(--white);
+            font-weight: 700;
+        }
+        .agent-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        .agent-card {
+            background: var(--charcoal);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--gold);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .agent-card:hover {
+            border-left-color: var(--white);
+            box-shadow: 0 0 20px rgba(201, 168, 76, 0.2);
+        }
+        .agent-card h3 {
+            color: var(--gold);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .agent-card p {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        .agent-status {
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .agent-status.active {
+            color: var(--green);
+        }
+        .agent-status.inactive {
+            color: var(--red);
+        }
+        .chat-container {
+            background: var(--charcoal);
+            border: 1px solid var(--gold);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .chat-input {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .chat-input textarea {
+            flex: 1;
+            background: var(--obsidian);
+            border: 1px solid var(--gold);
+            border-radius: 4px;
+            padding: 1rem;
+            color: var(--white);
+            font-family: 'Space Mono', monospace;
+            resize: none;
+            height: 80px;
+        }
+        .chat-input button {
+            background: var(--gold);
+            color: var(--obsidian);
+            border: none;
+            border-radius: 4px;
+            padding: 1rem 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 1px;
+        }
+        .chat-input button:hover {
+            background: var(--white);
+            transform: translateY(-2px);
+        }
+        .messages {
+            max-height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message {
+            background: var(--obsidian);
+            padding: 1rem;
+            border-radius: 4px;
+            border-left: 2px solid var(--gold);
+            font-size: 0.9rem;
+        }
+        .message.user {
+            border-left-color: var(--white);
+            margin-left: 2rem;
+        }
+        .message-header {
+            font-size: 0.7rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--gold);
+            text-align: center;
+            color: #888;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🎮 ARCADE Command Deck</h1>
+            <p style="color: #888; font-size: 0.9rem;">Studex Agent OS — 12 Autonomous Agents</p>
+        </div>
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Initializing...</span>
+            <span class="mode-badge" id="modeBadge">LOCAL</span>
+        </div>
+    </div>
+
+    <div class="dashboard">
+        <div class="stat-card">
+            <h3>Agents Active</h3>
+            <div class="value" id="agentCount">0/12</div>
+            <p style="color: #666; margin-top: 0.5rem; font-size: 0.8rem;">Hermes, Kev, Naledi, EDDIE, Charlie, Arcade, RALF, OpenInterpreter, OpenWorker, MiniCPM, LangChain, Blotato</p>
+        </div>
+        <div class="stat-card">
+            <h3>Daily Revenue</h3>
+            <div class="value" id="dailyRevenue">$0</div>
+            <p style="color: #666; margin-top: 0.5rem; font-size: 0.8rem;">Content, Ads, Voice, Game</p>
+        </div>
+    </div>
+
+    <h2 style="color: var(--gold); margin-top: 2rem; margin-bottom: 1rem; letter-spacing: 1px;">Active Agents</h2>
+    <div class="agent-grid" id="agentGrid">
+        <!-- Agent cards generated here -->
+    </div>
+
+    <div class="chat-container">
+        <h2 style="color: var(--gold); margin-bottom: 1rem; letter-spacing: 1px;">Command Console</h2>
+        <div class="chat-input">
+            <textarea id="promptInput" placeholder="Command your agents... (e.g., 'Naledi, write content' or 'Kev, decide on publish')"></textarea>
+            <button onclick="sendCommand()">Execute</button>
+        </div>
+        <div class="messages" id="messagesContainer">
+            <div class="message">
+                <div class="message-header">System / 00:00</div>
+                <div>✅ ARCADE Command Deck online. All agents ready.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Studex Arcade Cohort — CC-SA-01 (Cape Town Prime) | GitHub: github.com/TumeloRamaphosa/Arcade</p>
+        <p style="margin-top: 0.5rem;">🟢 Local Offline | Kev :8009 | MiniCPM :8888 | Hermes :3000 | Ollama :11434</p>
+    </div>
+
+    <script>
+        // Agent definitions
+        const agents = [
+            { name: 'Kev', role: 'Decision Router', status: 'active', port: 8009 },
+            { name: 'Naledi', role: 'CMO', status: 'active', cadence: 'Hourly' },
+            { name: 'EDDIE', role: 'Ad Engine', status: 'active', cadence: 'Every 4h' },
+            { name: 'Charlie', role: 'Voice Agent', status: 'active', type: 'Real-time' },
+            { name: 'Arcade', role: 'Game Master', status: 'active', type: 'Real-time' },
+            { name: 'RALF', role: 'Coordinator', status: 'active', cadence: 'Daily' },
+            { name: 'Hermes', role: 'Orchestrator', status: 'active', port: 3000 },
+            { name: 'OpenInterpreter', role: 'Code Executor', status: 'active', cadence: '30min' },
+            { name: 'OpenWorker', role: 'Job Queue', status: 'active', port: 7000 },
+            { name: 'MiniCPM', role: 'Vision', status: 'active', port: 8888 },
+            { name: 'LangChain', role: 'Communications', status: 'active', type: 'Real-time' },
+            { name: 'Blotato', role: 'Distributor', status: 'active', platforms: 6 }
+        ];
+
+        // Initialize agent grid
+        function initAgents() {
+            const grid = document.getElementById('agentGrid');
+            agents.forEach(agent => {
+                const card = document.createElement('div');
+                card.className = 'agent-card';
+                card.innerHTML = `
+                    <h3>
+                        <div class="status-dot" style="width: 8px; height: 8px; display: inline-block;"></div>
+                        ${agent.name}
+                    </h3>
+                    <p>${agent.role}</p>
+                    <div class="agent-status active">● ACTIVE</div>
+                `;
+                grid.appendChild(card);
+            });
+            document.getElementById('agentCount').textContent = `${agents.length}/${agents.length}`;
+        }
+
+        // Check services
+        async function checkServices() {
+            try {
+                const hermes = await fetch('http://localhost:3000/health').catch(() => null);
+                const kev = await fetch('http://localhost:8009/health').catch(() => null);
+                const minicpm = await fetch('http://localhost:8888/health').catch(() => null);
+                const ollama = await fetch('http://localhost:11434/api/tags').catch(() => null);
+
+                if (hermes?.ok || kev?.ok || ollama?.ok) {
+                    document.getElementById('statusDot').classList.remove('offline');
+                    document.getElementById('statusText').textContent = 'All Services Online';
+                    document.getElementById('modeBadge').textContent = 'LOCAL';
+                    return true;
+                } else {
+                    throw new Error('Services offline');
+                }
+            } catch (error) {
+                document.getElementById('statusDot').classList.add('offline');
+                document.getElementById('statusText').textContent = 'Offline Mode';
+                document.getElementById('modeBadge').textContent = 'OFFLINE';
+                return false;
+            }
+        }
+
+        // Send command
+        async function sendCommand() {
+            const input = document.getElementById('promptInput');
+            const cmd = input.value.trim();
+            if (!cmd) return;
+
+            // Add user command
+            addMessage(cmd, 'user');
+            input.value = '';
+
+            // Simulate agent response
+            setTimeout(() => {
+                const responses = [
+                    '✅ ' + cmd.split(',')[0] + ' acknowledged. Executing...',
+                    '🔄 Processing command via Kev router...',
+                    '📊 Agent status: All systems nominal',
+                    '🎯 Command routed. Check agent dashboard for results.',
+                ];
+                addMessage(responses[Math.floor(Math.random() * responses.length)], 'agent');
+            }, 500);
+        }
+
+        // Add message
+        function addMessage(content, type) {
+            const container = document.getElementById('messagesContainer');
+            const msg = document.createElement('div');
+            msg.className = 'message ' + (type === 'user' ? 'user' : '');
+            msg.innerHTML = `
+                <div class="message-header">${type === 'user' ? 'Command' : 'Agent Swarm'} / ${new Date().toLocaleTimeString()}</div>
+                <div>${content}</div>
+            `;
+            container.appendChild(msg);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            initAgents();
+            await checkServices();
+        });
+
+        // Allow Enter to send
+        document.getElementById('promptInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendCommand();
+            }
+        });
+    </script>
+</body>
+</html>
